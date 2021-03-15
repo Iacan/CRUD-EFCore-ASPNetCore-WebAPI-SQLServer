@@ -1,7 +1,6 @@
 ﻿using EFCore.Dominio.Models;
 using EFCore.Repositorio;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,18 +10,14 @@ namespace EFCore.WebAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class HomeController : ControllerBase
     {
         public readonly HeroiContext _context;
-        public WeatherForecastController(HeroiContext context)
+
+        public HomeController(HeroiContext context)
         {
             _context = context;
         }
-
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
 
         [HttpGet("Atualizar/{nameHero}")]
         public ActionResult Get(string nameHero)
@@ -70,7 +65,7 @@ namespace EFCore.WebAPI.Controllers
             return Ok();
         }
 
-        [HttpGet("filtro/{nome}")]
+        [HttpGet("Seleciona/{nome}")]
         public ActionResult GetFiltro(string nome)
         {
             var listHeroi = _context.Herois
