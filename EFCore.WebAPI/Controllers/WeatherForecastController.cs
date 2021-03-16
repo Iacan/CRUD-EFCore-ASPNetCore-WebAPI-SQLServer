@@ -74,7 +74,7 @@ namespace EFCore.WebAPI.Controllers
         public ActionResult GetFiltro(string nome)
         {
             var listHeroi = _context.Herois
-                .Where(h => h.Nome.Contains(nome))
+                .Where(h => EF.Functions.Like(h.Nome, $"%{nome}%"))
                 .ToList();
 
             //var listHeroi = (
