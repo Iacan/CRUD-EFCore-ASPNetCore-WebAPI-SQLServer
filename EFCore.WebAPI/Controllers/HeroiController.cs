@@ -15,33 +15,36 @@ namespace EFCore.WebAPI.Controllers
     [ApiController]
     public class HeroiController : ControllerBase
     {
-        public readonly HeroiContext _context;
-        public HeroiController(HeroiContext context)
+        private readonly IEFCoreRepository _repository;
+
+        public HeroiController(IEFCoreRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         // GET: api/<HeroiController>
         [HttpGet]
-        public ActionResult Get()
+        public async Task<IActionResult> Get()
         {
             try
             {
-                return Ok(new Heroi());
+                var herois = await _repository.GetAllHerois(true);
+                return Ok(herois);
             }
             catch (Exception ex)
             {
                 return BadRequest($"Erro: {ex}");
-            }            
+            }
         }
 
-        // GET api/<HeroiController>/5
-        [HttpGet("{id}")]
-        public ActionResult Get(int id)
+        // GET: api/<BatalhaController>
+        [HttpGet("{id}", Name = "GetHeroi")]
+        public async Task<IActionResult> Get(int id)
         {
             try
             {
-                return Ok();
+                var herois = await _repository.GetHeroiById(id, true);
+                return Ok(herois);
             }
             catch (Exception ex)
             {
@@ -51,14 +54,20 @@ namespace EFCore.WebAPI.Controllers
 
         // POST api/<HeroiController>
         [HttpPost]
-        public ActionResult Post(Heroi model)
+        public async Task<IActionResult> Post(Heroi model)
         {
             try
-            {                
-                _context.Herois.Add(model);
-                _context.SaveChanges();
+            {
+                _repository.Add(model);
 
-                return Ok("BAZINGA");
+                if (await _repository.SaveChangeAsync())
+                {
+                    return Ok("BAZINGA");
+                }
+                else
+                {
+                    return Ok("Não Salvou");
+                }
             }
             catch (Exception ex)
             {
@@ -68,18 +77,20 @@ namespace EFCore.WebAPI.Controllers
 
         // PUT api/<HeroiController>/5
         [HttpPut("{id}")]
-        public ActionResult Put(int id, Heroi model)
+        public async Task<IActionResult> Put(int id, Heroi model)
         {
             try
             {
-                if(_context.Herois.AsNoTracking().FirstOrDefault(h => h.Id == id) != null)
+                var heroi = await _repository.GetHeroiById(id);
+
+                if (heroi != null)
                 {
-                    _context.Update(model);
-                    _context.SaveChanges();
-
-                    return Ok("BAZINGA");
+                    _repository.Update(heroi);
+                    if (await _repository.SaveChangeAsync())
+                    {
+                        return Ok("BAZINGA");
+                    }
                 }
-
                 return Ok("Não Encontrado!");
             }
             catch (Exception ex)
@@ -90,8 +101,26 @@ namespace EFCore.WebAPI.Controllers
 
         // DELETE api/<HeroiController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            try
+            {
+                var heroi = await _repository.GetHeroiById(id);
+
+                if (heroi != null)
+                {
+                    _repository.Delete(heroi);
+                    if (await _repository.SaveChangeAsync())
+                    {
+                        return Ok("BAZINGA");
+                    }
+                }
+                return Ok("Não Encontrado!");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro: {ex}");
+            }
         }
     }
 }
